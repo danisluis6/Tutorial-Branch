@@ -153,8 +153,28 @@ public class MonsterPreferences {
         }
     }
 
-    public BranchUniversalObject getLatestMonsterObj() {
-        BranchUniversalObject myMonsterObject = new BranchUniversalObject()
+    /**
+     * @link(https://docs.branch.io/pages/apps/android/)
+     * Create content reference
+     * - The Branch Universal Object encapsulates the thing you want to share (content or user)
+     * - Uses the Universal Object Properties
+     *
+     *
+     *      BranchUniversalObject myMonsterObject = new BranchUniversalObject()
+                .setTitle(getMonsterName())
+                .setCanonicalIdentifier(getCanonicalId())
+                .setContentDescription(getMonsterDescription())
+                .setContentImageUrl("https://s3-us-west-1.amazonaws.com/branchmonsterfactory/" + (short) getColorIndex() + (short) getBodyIndex() + (short) getFaceIndex() + ".png")
+                .setContentMetadata(new ContentMetadata().addCustomMetadata("color_index", String.valueOf(getColorIndex())))
+                .setContentMetadata(new ContentMetadata().addCustomMetadata("body_index", String.valueOf(getBodyIndex())))
+                .setContentMetadata(new ContentMetadata().addCustomMetadata("face_index", String.valueOf(getFaceIndex())))
+                .setContentMetadata(new ContentMetadata().addCustomMetadata("monster", "true"))
+                .setContentMetadata(new ContentMetadata().addCustomMetadata("monster_name", getMonsterName()));
+
+            Using with compile 'io.branch.sdk.android:library:2.+'
+
+
+            BranchUniversalObject myMonsterObject = new BranchUniversalObject()
                 .setTitle(getMonsterName())
                 .setCanonicalIdentifier(getCanonicalId())
                 .setContentDescription(getMonsterDescription())
@@ -165,6 +185,21 @@ public class MonsterPreferences {
                 .addContentMetadata("monster", "true")
                 .addContentMetadata("monster_name", getMonsterName());
 
+            Using with compile(name:'Branch-SDK-release', ext:'aar')
+     *
+     * @return myMonsterObject
+     */
+    public BranchUniversalObject    getLatestMonsterObj() {
+        BranchUniversalObject myMonsterObject = new BranchUniversalObject()
+                .setTitle(getMonsterName())
+                .setCanonicalIdentifier(getCanonicalId())
+                .setContentDescription(getMonsterDescription())
+                .setContentImageUrl("https://s3-us-west-1.amazonaws.com/branchmonsterfactory/" + (short) getColorIndex() + (short) getBodyIndex() + (short) getFaceIndex() + ".png")
+                .addContentMetadata("color_index", String.valueOf(getColorIndex()))
+                .addContentMetadata("body_index", String.valueOf(getBodyIndex()))
+                .addContentMetadata("face_index", String.valueOf(getFaceIndex()))
+                .addContentMetadata("monster", "true")
+                .addContentMetadata("monster_name", getMonsterName());
         return myMonsterObject;
     }
 

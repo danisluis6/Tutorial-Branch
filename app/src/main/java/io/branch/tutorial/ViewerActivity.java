@@ -8,12 +8,15 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
 import io.branch.indexing.BranchUniversalObject;
+import io.branch.referral.Branch;
+import io.branch.referral.util.BranchEvent;
 import io.branch.tutorial.fragment.InfoFragment;
+import io.branch.tutorial.util.MonsterImageView;
+import io.branch.tutorial.util.MonsterPreferences;
 
 /**
  * Created by lorence on 11/01/2018.
@@ -31,7 +34,7 @@ public class ViewerActivity extends FragmentActivity implements InfoFragment.OnF
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_monster_viewer);
+        setContentView(R.layout.monster_viewer);
         initUI();
     }
 
@@ -63,19 +66,7 @@ public class ViewerActivity extends FragmentActivity implements InfoFragment.OnF
             // set my monster image
             monsterImageView_.setMonster(myMonsterObject_);
             myMonsterObject_.addUserInteraction(BranchEvent.VIEW);
-        } else {
-            Log.e(TAG, "Monster is null. Unable to view monster");
         }
-
-        // Change monster
-        findViewById(R.id.cmdChange).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent i = new Intent(getApplicationContext(), MonsterCreatorActivity.class);
-                startActivity(i);
-                finish();
-            }
-        });
 
         // More info
         findViewById(R.id.infoButton).setOnClickListener(new View.OnClickListener() {
@@ -87,45 +78,6 @@ public class ViewerActivity extends FragmentActivity implements InfoFragment.OnF
                 ft.replace(R.id.container, infoFragment).addToBackStack("info_container").commit();
             }
         });
-
-        //Share monster
-        findViewById(R.id.share_btn).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                shareMyMonster();
-            }
-        });
-
-    }
-
-    /**
-     * Method to share my custom monster with sharing with Branch Share sheet
-     */
-    private void shareMyMonster() {
-        LinkProperties linkProperties = new LinkProperties()
-                .addTag("myMonsterTag1")
-                //.setAlias("myCustomMonsterLink") // In case you need to white label your link
-                .setFeature("myMonsterSharefeature1")
-                .setStage("1")
-                .addControlParameter("$android_deeplink_path", "monster/view/");
-
-        String monsterName = myMonsterObject_.getTitle();
-        String shareTitle = "Check out my Branchster named " + monsterName;
-        String shareMessage = "I just created this Branchster named " + monsterName + " in the Branch Monster Factory.\n\nSee it here:\n";
-        String copyUrlMessage = "Save " + monsterName + " url";
-        String copiedUrlMessage = "Added " + monsterName + " url to clipboard";
-
-        ShareSheetStyle shareSheetStyle = new ShareSheetStyle(MonsterViewerActivity.this, shareTitle, shareMessage)
-                .setCopyUrlStyle(getResources().getDrawable(android.R.drawable.ic_menu_send), copyUrlMessage, copiedUrlMessage)
-                .setMoreOptionStyle(getResources().getDrawable(android.R.drawable.ic_menu_search), "More options")
-                .addPreferredSharingOption(SharingHelper.SHARE_WITH.FACEBOOK)
-                .addPreferredSharingOption(SharingHelper.SHARE_WITH.EMAIL)
-                .addPreferredSharingOption(SharingHelper.SHARE_WITH.MESSAGE)
-                .addPreferredSharingOption(SharingHelper.SHARE_WITH.TWITTER);
-
-        myMonsterObject_.showShareSheet(MonsterViewerActivity.this, linkProperties, shareSheetStyle, null);
-
-        myMonsterObject_.addUserInteraction(BranchEvent.SHARE_COMPLETED);
 
     }
 
@@ -148,7 +100,6 @@ public class ViewerActivity extends FragmentActivity implements InfoFragment.OnF
                     }).create().show();
         }
     }
-
 
     @Override
     public void onFragmentInteraction() {

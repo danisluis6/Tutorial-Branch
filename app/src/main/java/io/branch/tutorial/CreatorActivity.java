@@ -1,10 +1,151 @@
 package io.branch.tutorial;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
+
+import io.branch.indexing.BranchUniversalObject;
+import io.branch.tutorial.util.ColorController;
+import io.branch.tutorial.util.MonsterImageView;
+import io.branch.tutorial.util.MonsterPreferences;
 
 /**
  * Created by lorence on 11/01/2018.
+ *
  */
 
 public class CreatorActivity extends Activity {
+
+    //
+    EditText editName;
+    // Image view to show custom monster
+    MonsterImageView monsterImageView_;
+
+
+    /* This MonsterPreferences is populated either by the user's actions as they customise their
+    monster, or when data is received with the a deep link dictionary attached. */
+    MonsterPreferences prefs;
+
+
+    int faceIndex;
+    int bodyIndex;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.monster_creator);
+
+        prefs = MonsterPreferences.getInstance(getApplicationContext());
+        BranchUniversalObject latestMonsterObj = prefs.getLatestMonsterObj();
+
+        // Assign UI items to variables for manipulation later on.
+        editName = (EditText) findViewById(R.id.editName);
+        monsterImageView_ = (MonsterImageView) findViewById(R.id.monster_img_view);
+        monsterImageView_.setMonster(latestMonsterObj);
+        editName.setText(latestMonsterObj.getTitle());
+
+
+        // Go to the previous face when the user clicks the up arrow.
+        findViewById(R.id.cmdUp).setOnClickListener(new Button.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                faceIndex--;
+                if (faceIndex == -1) {
+                    faceIndex = getResources().obtainTypedArray(R.array.face_drawable_array).length() - 1;
+                }
+
+                prefs.setFaceIndex(faceIndex);
+                monsterImageView_.updateFace(faceIndex);
+            }
+        });
+
+        // Go to the next face when the user clicks the down arrow.
+        findViewById(R.id.cmdDown).setOnClickListener(new Button.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                faceIndex++;
+                if (faceIndex == getResources().obtainTypedArray(R.array.face_drawable_array).length()) {
+                    faceIndex = 0;
+                }
+
+                prefs.setFaceIndex(faceIndex);
+                monsterImageView_.updateFace(faceIndex);
+            }
+        });
+
+        // Go to the previous body when the user clicks the left arrow.
+        findViewById(R.id.cmdLeft).setOnClickListener(new Button.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                bodyIndex--;
+                if (bodyIndex == -1) {
+                    bodyIndex = getResources().obtainTypedArray(R.array.body_drawable_array).length() - 1;
+                }
+
+                prefs.setBodyIndex(bodyIndex);
+                monsterImageView_.updateBody(bodyIndex);
+            }
+        });
+
+        // Go to the next body when the user clicks the right arrow.
+        findViewById(R.id.cmdRight).setOnClickListener(new Button.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                bodyIndex++;
+                if (bodyIndex == getResources().obtainTypedArray(R.array.body_drawable_array).length()) {
+                    bodyIndex = 0;
+                }
+
+                prefs.setBodyIndex(bodyIndex);
+                monsterImageView_.updateBody(bodyIndex);
+            }
+        });
+
+        // Save the monster name to prefs object, then open the MonsterViewerActivity.
+        findViewById(R.id.cmdDone).setOnClickListener(new Button.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String monsterName = getString(R.string.monster_name);
+                if (editName.getText().toString().length() > 0) {
+                    monsterName = editName.getText().toString();
+                }
+                prefs.setMonsterName(monsterName);
+                prefs.setCanonicalId(monsterName + System.currentTimeMillis());
+                // List this monster on google search
+                BranchUniversalObject monObj = prefs.getLatestMonsterObj();
+                monObj.listOnGoogleSearch(CreatorActivity.this);
+                Intent i = new Intent(getApplicationContext(), ViewerActivity.class);
+                i.putExtra(ViewerActivity.MY_MONSTER_OBJ_KEY, monObj);
+                startActivity(i);
+                finish();
+                monObj.addKeyWord(editName.getText().toString());
+
+                //Share for local search
+                monObj.addToSharableContent();
+
+            }
+        });
+
+        new ColorController(this, monsterImageView_).start();
+    }
+
+
+    @Override
+    public void onBackPressed() {
+        new AlertDialog.Builder(this)
+                .setTitle("Exit")
+                .setMessage("Are you sure you want to exit?")
+                .setNegativeButton(android.R.string.no, null)
+                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        finish();
+                    }
+                }).create().show();
+    }
 }
